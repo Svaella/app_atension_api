@@ -8,8 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import func
 
-# 🎯 Modelo ML
-model = joblib.load("Modelo1.pkl")
+
 
 # 🎯 Base de datos
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -61,6 +60,8 @@ class InputData(BaseModel):
 
 @app.post("/predict")
 def predict(data: InputData):
+    # 🎯 Modelo ML
+    model = joblib.load("Modelo1.pkl")
     try:
         df = pd.DataFrame([{
             "Gender": data.Gender,
