@@ -110,5 +110,5 @@ def predict(data: InputData):
         raise HTTPException(status_code=500, detail=str(e))
 
 # 🧪 Dummy interfaz Gradio obligatoria
-def dummy(): return "API activa"
-gr.Interface(fn=dummy, inputs=[], outputs="text").launch()
+#def dummy(): return "API activa"
+#gr.Interface(fn=dummy, inputs=[], outputs="text").launch()
