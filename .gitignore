@@ -1,1 +1,3 @@
-Modelo1.pkl
+__pycache__/
+*.pyc
+.env
