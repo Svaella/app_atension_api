@@ -1,17 +1,17 @@
 FROM python:3.9-slim
 
-# Establecer directorio de trabajo
 WORKDIR /app
 
-# Copiar todos los archivos al contenedor
+RUN pip install --no-cache-dir gdown
+
 COPY . /app
 
-# Instalar dependencias
+# Descarga desde Google Drive
+RUN gdown --id 1dktpFWSCBeA3wo-DKIFV-36f-NnDt42v -O Modelo_atension.pkl
+
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Exponer el puerto que usará Uvicorn
 EXPOSE 7860
 
-# Ejecutar el servidor FastAPI
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "7860"]
 
