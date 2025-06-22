@@ -10,7 +10,6 @@ from sqlalchemy.sql import func
 from typing import Union
 
 # 🎯 Conexión a BD
-#DATABASE_URL = "postgresql://postgres:Svaella10.@localhost:5432/atension_db" #local
 DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -40,7 +39,14 @@ class HTARegistro(Base):
     respuestas_hta = Column(String)
     fecha_registro = Column(DateTime(timezone=True), server_default=func.now())
 
-Base.metadata.create_all(bind=engine)
+# ✅ Crear tabla si no existe
+def crear_tablas_si_no_existen():
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        print("❌ Error creando tablas:", e)
+
+crear_tablas_si_no_existen()
 
 # === App y modelo ===
 app = FastAPI()
@@ -167,7 +173,7 @@ def guardar_valoracion(data: EntradaCompleta):
             bmi=float(bmi),
             sal=str(texto_binario(data.sal)),
             alcohol=str(texto_binario(data.alcohol)),
-            actividad=str(texto_binario(data.actividad)),
+            actividad=str(texto_binario(data.activity)),
             tabaco=str(texto_tabaco(data.tabaco)),
             vapeo=str(texto_vapeo(data.vapeo)),
             colesterol=str(texto_binario(data.colesterol)),
