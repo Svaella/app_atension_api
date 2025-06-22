@@ -173,7 +173,7 @@ def guardar_valoracion(data: EntradaCompleta):
             bmi=float(bmi),
             sal=str(texto_binario(data.sal)),
             alcohol=str(texto_binario(data.alcohol)),
-            actividad=str(texto_binario(data.activity)),
+            actividad=str(texto_binario(data.actividad)),
             tabaco=str(texto_tabaco(data.tabaco)),
             vapeo=str(texto_vapeo(data.vapeo)),
             colesterol=str(texto_binario(data.colesterol)),
