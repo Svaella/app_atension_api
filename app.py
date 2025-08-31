@@ -12,6 +12,7 @@ from typing import Union
 
 # 🎯 Conexión a BD
 DATABASE_URL = os.getenv("DATABASE_URL")
+#DATABASE_URL = "postgresql://atension_db_user:B7xqNTbHuowBUoeCSqK4BjRk5E0ZZ3mB@dpg-d2ptpcv5r7bs73a313eg-a.oregon-postgres.render.com/atension_db"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
