@@ -8,10 +8,12 @@ from sqlalchemy import create_engine, Column, Integer, String, Numeric, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import func
-from typing import Union
+from typing import Union, Optional
+from datetime import datetime
 
 # 🎯 Conexión a BD
 DATABASE_URL = os.getenv("DATABASE_URL")
+#DATABASE_URL = "postgresql://postgres:Svaella10.@localhost/atension_db"
 #DATABASE_URL = "postgresql://atension_db_user:B7xqNTbHuowBUoeCSqK4BjRk5E0ZZ3mB@dpg-d2ptpcv5r7bs73a313eg-a.oregon-postgres.render.com/atension_db"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -34,12 +36,14 @@ class HTARegistro(Base):
     actividad = Column(String(5), nullable=False)
     colesterol = Column(String(5), nullable=False)
     diabetes = Column(String(30), nullable=False)
-    diagnosticado_hta = Column(String(5), nullable=False)
     riesgo = Column(String(10), nullable=False)
     probabilidad = Column(Numeric(5, 2), nullable=False)
-    puntaje_conocimiento_hta = Column(Integer)
-    respuestas_hta = Column(String)
     fecha_registro = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # ✨ NUEVOS CAMPOS DE TIEMPO
+    inicio_evaluacion = Column(DateTime(timezone=True), nullable=True)
+    fin_evaluacion = Column(DateTime(timezone=True), nullable=True)
+    tiempo_total_segundos = Column(Integer, nullable=True)
 
 # ✅ Crear tabla si no existe
 def crear_tablas_si_no_existen():
@@ -70,15 +74,16 @@ class EntradaPrediccion(BaseModel):
     diabetes: int
 
 class EntradaCompleta(EntradaPrediccion):
-    diagnosticado_hta: Union[int, bool]
-    puntaje: int
-    respuestas: dict
+    # Campos adicionales para guardado
+    inicio_evaluacion: Optional[str] = None
+    fin_evaluacion: Optional[str] = None
+    tiempo_total_segundos: Optional[int] = None
 
 # === Funciones auxiliares ===
 def interpretar(prob):
-    if prob >= 0.65:
+    if prob >= 0.60:
         return "Alto"
-    elif prob >= 0.35:
+    elif prob >= 0.30:
         return "Moderado"
     else:
         return "Bajo"
@@ -165,9 +170,24 @@ def guardar_valoracion(data: EntradaCompleta):
         prob = float(modelo.predict_proba([entrada])[0][1])
         nivel = interpretar(prob)
 
+        # ✨ PROCESAR CAMPOS DE TIEMPO
+        inicio_eval = None
+        fin_eval = None
+        
+        if data.inicio_evaluacion:
+            try:
+                inicio_eval = datetime.fromisoformat(data.inicio_evaluacion.replace('Z', '+00:00'))
+            except:
+                pass
+                
+        if data.fin_evaluacion:
+            try:
+                fin_eval = datetime.fromisoformat(data.fin_evaluacion.replace('Z', '+00:00'))
+            except:
+                pass
+
         db = SessionLocal()
         nuevo = HTARegistro(
-            diagnosticado_hta=str(texto_binario(data.diagnosticado_hta)),
             sexo=str(texto_sexo(data.sexo)),
             edad=int(data.edad),
             peso=float(data.peso),
@@ -183,8 +203,11 @@ def guardar_valoracion(data: EntradaCompleta):
             estres_dias=int(data.estres_dias),
             riesgo=str(nivel),
             probabilidad=round(float(prob) * 100, 2),
-            puntaje_conocimiento_hta=int(data.puntaje),
-            respuestas_hta=str(data.respuestas)
+            
+            # ✨ NUEVOS CAMPOS DE TIEMPO
+            inicio_evaluacion=inicio_eval,
+            fin_evaluacion=fin_eval,
+            tiempo_total_segundos=data.tiempo_total_segundos
         )
         db.add(nuevo)
         db.commit()
@@ -193,7 +216,8 @@ def guardar_valoracion(data: EntradaCompleta):
         return {
             "mensaje": "✅ Datos guardados correctamente",
             "riesgo": nivel,
-            "probabilidad": round(prob * 100, 2)
+            "probabilidad": round(prob * 100, 2),
+            "tiempo_evaluacion": data.tiempo_total_segundos
         }
 
     except Exception as e:
