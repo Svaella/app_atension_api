@@ -43,7 +43,7 @@ class HTARegistro(Base):
     # ✨ NUEVOS CAMPOS DE TIEMPO
     inicio_evaluacion = Column(DateTime(timezone=True), nullable=True)
     fin_evaluacion = Column(DateTime(timezone=True), nullable=True)
-    tiempo_total_segundos = Column(Numeric(10, 2), nullable=True)  # Cambiado de Integer a Numeric
+    tiempo_total_segundos = Column(Numeric(10, 3), nullable=True)  # Cambiado de Integer a Numeric
 
 # ✅ Crear tabla si no existe
 def crear_tablas_si_no_existen():
