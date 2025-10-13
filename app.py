@@ -12,8 +12,8 @@ from typing import Union, Optional
 from datetime import datetime
 
 # 🎯 Conexión a BD
-DATABASE_URL = os.getenv("DATABASE_URL")
-#DATABASE_URL = "postgresql://postgres:Svaella10.@localhost/atension_db"
+#DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = "postgresql://postgres:Svaella10.@localhost/atension_db"
 #DATABASE_URL = "postgresql://atension_db_user:B7xqNTbHuowBUoeCSqK4BjRk5E0ZZ3mB@dpg-d2ptpcv5r7bs73a313eg-a.oregon-postgres.render.com/atension_db"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -43,7 +43,7 @@ class HTARegistro(Base):
     # ✨ NUEVOS CAMPOS DE TIEMPO
     inicio_evaluacion = Column(DateTime(timezone=True), nullable=True)
     fin_evaluacion = Column(DateTime(timezone=True), nullable=True)
-    tiempo_total_segundos = Column(Integer, nullable=True)
+    tiempo_total_segundos = Column(Numeric(10, 2), nullable=True)  # Cambiado de Integer a Numeric
 
 # ✅ Crear tabla si no existe
 def crear_tablas_si_no_existen():
@@ -77,7 +77,7 @@ class EntradaCompleta(EntradaPrediccion):
     # Campos adicionales para guardado
     inicio_evaluacion: Optional[str] = None
     fin_evaluacion: Optional[str] = None
-    tiempo_total_segundos: Optional[int] = None
+    tiempo_total_segundos: Optional[float] = None  # Cambiado de int a float
 
 # === Funciones auxiliares ===
 def interpretar(prob):
@@ -207,7 +207,7 @@ def guardar_valoracion(data: EntradaCompleta):
             # ✨ NUEVOS CAMPOS DE TIEMPO
             inicio_evaluacion=inicio_eval,
             fin_evaluacion=fin_eval,
-            tiempo_total_segundos=data.tiempo_total_segundos
+            tiempo_total_segundos=float(data.tiempo_total_segundos) if data.tiempo_total_segundos else None  # Convertir a float
         )
         db.add(nuevo)
         db.commit()
